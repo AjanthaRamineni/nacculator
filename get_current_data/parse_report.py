@@ -9,17 +9,20 @@ import send_email as sm
 
 def generate_report_csv(input_file):
 
+    print "Calling pdf2txt"
+
     cmd = 'pdf2txt.py -o out.xml ' + input_file
     os.system(cmd)
     filename = 'out.xml'
 
+    print "Called Pdf2Txt"
     tree = ET.parse(filename)
     pages = tree.getroot()
     final_result = {}
-
+    print "Checking xml IDS"
     for iter in pages[0].findall('textbox'):
         # ADC IDs Total
-        if iter.attrib['id'] == '36':
+        if iter.attrib['id'] == '16':
             result = []
             for t_iter in iter.findall('textline')[-1].findall('text'):
                 if t_iter.text.strip():
@@ -27,7 +30,7 @@ def generate_report_csv(input_file):
             final_result['ADC IDs Total'] = ''.join(result)
 
         # ADC Percentage
-        if iter.attrib['id'] == '34':
+        if iter.attrib['id'] == '14':
             result = []
             for t_iter in iter.findall('textline')[-1].findall('text'):
                 if t_iter.text.strip():
@@ -35,7 +38,7 @@ def generate_report_csv(input_file):
             final_result['ADC Percentage'] = ''.join(result)
 
         # Autopsies
-        if iter.attrib['id'] == '37':
+        if iter.attrib['id'] == '17':
             result = []
             for t_iter in iter.findall('textline')[0].findall('text'):
                 if t_iter.text.strip():
@@ -43,7 +46,7 @@ def generate_report_csv(input_file):
             final_result['Autopsies'] = ''.join(result)
 
         # Autopsies Percentage
-        if iter.attrib['id'] == '35':
+        if iter.attrib['id'] == '15':
             result = []
             for t_iter in iter.findall('textline')[0].findall('text'):
                 if t_iter.text.strip():
@@ -51,7 +54,7 @@ def generate_report_csv(input_file):
             final_result['Autopsies Percentage'] = ''.join(result)
 
         # NP Forms
-        if iter.attrib['id'] == '37':
+        if iter.attrib['id'] == '17':
             result = []
             for t_iter in iter.findall('textline')[1].findall('text'):
                 if t_iter.text.strip():
@@ -59,23 +62,23 @@ def generate_report_csv(input_file):
             final_result['NP Forms'] = ''.join(result)
 
         # 6+
-        if iter.attrib['id'] == '9':
+        if iter.attrib['id'] == '2':
             result = []
-            for t_iter in iter.findall('textline')[0].findall('text'):
+            for t_iter in iter.findall('textline')[3].findall('text'):
                 if t_iter.text.strip():
                     result.append(t_iter.text)
             final_result['6+'] = ''.join(result)
 
         # <6
-        if iter.attrib['id'] == '4':
+        if iter.attrib['id'] == '3':
             result = []
-            for t_iter in iter.findall('textline')[0].findall('text'):
+            for t_iter in iter.findall('textline')[3].findall('text'):
                 if t_iter.text.strip():
                     result.append(t_iter.text)
             final_result['<6'] = ''.join(result)
 
         # Date Entered
-        if iter.attrib['id'] == '0':
+        if iter.attrib['id'] == '1':
             result = []
             for t_iter in iter.findall('textline')[0].findall('text'):
                 if t_iter.text.strip():
@@ -116,12 +119,11 @@ def generate_report_csv(input_file):
     # Create a text/html message from a rendered template
     msg = MIMEText(
         Environment().from_string(TEMPLATE).render(
-            title='UDS REPORT',
+            title='NACC REPORT',
             final_result=final_result
         ), "html"
     )
-    recipient = ['rsengupta@ufl.edu', 'rouknasengupta@gmail.com']
-    sm.send_email(recipient, 'UDS REPORT', msg)
+    sm.send_email('NACC REPORT', msg)
 
 
 def main(argc):

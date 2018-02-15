@@ -61,7 +61,7 @@ def generate_report(driver, username, password):
 
 
 def main(argv):
-    config = read_config("packet_config_example.ini")
+    config = read_config("packet_config.ini")
     try:
         nacc_options = argv
         username = config.get('credentials','username')
@@ -96,13 +96,12 @@ def main(argv):
         if nacc_options == "getdata":
             get_nacc_data(driver)
         if nacc_options == "report":
+            generate_report(driver,username,password)
             new_filename = downloadpath + 'broker93_' + datetime.datetime.now().strftime("%Y%m%d") + '.pdf'
             shutil.move(os.path.join(downloadpath, 'broker93.pdf'), new_filename)
             # output_file = config.get('reportpath', 'path') +
             # 'report_' + datetime.datetime.now().strftime("%Y%m%d") + '.csv'
-            generate_report(driver,username,password)
             parse_report.generate_report_csv(new_filename)
-
 
         driver.close()
 
