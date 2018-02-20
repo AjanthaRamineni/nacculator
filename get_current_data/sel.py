@@ -60,6 +60,23 @@ def generate_report(driver, username, password):
     return
 
 
+def enable_download_in_headless_chrome(driver, download_dir):
+    """
+    there is currently a "feature" in chrome where
+    headless does not allow file download: https://bugs.chromium.org/p/chromium/issues/detail?id=696481
+    This method is a hacky work-around until the official chromedriver support for this.
+    Requires chrome version 62.0.3196.0 or above.
+    """
+
+    # add missing support for chrome "send_command"  to selenium webdriver
+    driver.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
+
+    params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
+    command_result = driver.execute("send_command", params)
+    print("response from browser:")
+    for key in command_result:
+        print("result:" + key + ":" + str(command_result[key]))
+
 def main(argv):
     config = read_config("packet_config.ini")
     try:
@@ -77,7 +94,12 @@ def main(argv):
           "safebrowsing.enabled": True,
           "plugins.always_open_pdf_externally": True
         })
+        options.add_argument("--headless")
         driver = webdriver.Chrome(chrome_options = options)
+
+        enable_download_in_headless_chrome(driver, downloadpath)
+        driver.set_window_size(1400, 700)
+
         # Sign In credentials along with nacc url
         str = "https://"+username+":"+password+"@www.alz.washington.edu/MEMBER/sitesub.htm"
         driver.get(str)
@@ -96,11 +118,10 @@ def main(argv):
         if nacc_options == "getdata":
             get_nacc_data(driver)
         if nacc_options == "report":
+            print "Getting report"
             generate_report(driver,username,password)
             new_filename = downloadpath + 'broker93_' + datetime.datetime.now().strftime("%Y%m%d") + '.pdf'
             shutil.move(os.path.join(downloadpath, 'broker93.pdf'), new_filename)
-            # output_file = config.get('reportpath', 'path') +
-            # 'report_' + datetime.datetime.now().strftime("%Y%m%d") + '.csv'
             parse_report.generate_report_csv(new_filename)
 
         driver.close()
